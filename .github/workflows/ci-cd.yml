@@ -1,0 +1,62 @@
+name: CI/CD for NestJS Fastify Backend
+
+on:
+  push:
+    branches: 
+      - main
+      - production # Adjust as needed
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎️ Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🏗️ Install Bun
+        shell: bash
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.bun/bin:$PATH"
+          bun --version  # Verify installation
+
+      - name: 📦 Cache Bun Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: 📦 Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔨 Build Project
+        run: bun run build
+
+      - name: ✅ Run Tests
+        run: bun run test
+        env:
+          NODE_ENV: test
+        continue-on-error: false  # Fail if tests fail
+
+      - name: 📦 Package for Deployment
+        run: |
+          mkdir -p deploy
+          cp -r dist deploy/
+          cp package.json deploy/
+          cp bun.lockb deploy/
+          cp -r node_modules deploy/
+          cd deploy && zip -r deploy.zip .
+
+      - name: 🚀 Deploy (AWS Lambda)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1  # Adjust region
+        run: |
+          aws lambda update-function-code \
+            --function-name MyNestFastifyApp \
+            --zip-file fileb://deploy/deploy.zip
