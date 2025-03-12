@@ -24,7 +24,7 @@ jobs:
       - name: 📦 Cache Bun Dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.bun/install/cache
+          path: ~/.bun
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
           restore-keys: |
             bun-${{ runner.os }}-
@@ -50,7 +50,7 @@ jobs:
       - name: 📦 Package for Deployment
         run: |
           mkdir -p deploy
-          cp -r dist node_modules package.json deploy/
+          cp -r dist package.json deploy/
           [ -f bun.lockb ] && cp bun.lockb deploy/
           cd deploy && zip -r deploy.zip .
 
@@ -71,3 +71,6 @@ jobs:
             --function-name nestjs-prisma-service-dev-app \
             --s3-bucket serverless-framework-deployments-us-east-1-1e5a5836-468b \
             --s3-key deploy.zip
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
