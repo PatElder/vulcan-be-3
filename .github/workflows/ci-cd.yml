@@ -53,8 +53,10 @@ jobs:
             if [ -f bun.lockb ]; then cp bun.lockb deploy/; else echo "Skipping bun.lockb"; fi
             cd deploy && zip -r deploy.zip .
 
+      - name: ✅ Verify AWS Authentication
+        run: aws sts get-caller-identity
 
-      - name: 🚀 Deploy to AWS Lambda
+      - name: 🚀 Deploy to AWS Lambda 2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
