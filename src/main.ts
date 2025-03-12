@@ -10,6 +10,7 @@ async function bootstrap() {
   await app.init();
 
   const expressApp = app.getHttpAdapter().getInstance();
+  console.log('Starting!');
   server = serverless({ app: expressApp });
 }
 
