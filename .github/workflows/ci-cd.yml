@@ -3,7 +3,7 @@ name: CI/CD for NestJS Fastify Backend
 on:
   push:
     branches:
-      - production 
+      - production
 
 jobs:
   build-and-deploy:
@@ -54,12 +54,12 @@ jobs:
           [ -f bun.lockb ] && cp bun.lockb deploy/
           cd deploy && zip -r deploy.zip .
 
-      - name: 🛠️ Configure AWS credentials
+      - name: 🛠️ Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/admin
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-
 
       - name: ✅ Verify AWS Authentication
         run: aws sts get-caller-identity
